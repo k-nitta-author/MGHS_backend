@@ -14,6 +14,41 @@ app.secret_key = 'secret_key'
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
 
 db = SQLAlchemy(app)
+
+class User(db.Model):
+    id =db.Column(db.Integer, primary_key=True)
+    public_id=db.Column(db.String(50), unique=True)
+    name=db.Column(db.String(50))
+    username=db.Column(db.String(50))
+    password=db.Column(db.String(50))
+    admin=db.Column(db.Boolean)
+    phone_number=db.Column(db.String(50))
+
+class Service():
+    id =db.Column(db.Integer, primary_key=True)
+    name=db.Column(db.String(50))
+    description=db.Column(db.String(50))
+    availability=db.Column(db.String(50))
+    price=db.Column(db.DECIMAL())
+
+class Appointment(db.Model):
+    appointment_id=db.Column(db.Integer, primary_key=True)
+    user_id=db.Column(db.Integer, db.ForeignKey("user.id"))
+    service_id=db.Column(db.Integer, db.ForeignKey("user.id"))
+    status=db.Column(db.String(50), primary_key=True)
+
+class Job(db.Model):
+    id=db.Column(db.Integer, primary_key=True)
+    jobTitle=db.Column(db.String(50))
+    jobRequest=db.Column(db.String(100))
+    jobRequirements=db.Column(db.String(100))
+    
+
+class Notification(db.Model):
+    id=db.Column(db.Integer, primary_key=True)
+    message=db.Column(db.String(50))
+    isReady=db.Column(db.Integer)
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
