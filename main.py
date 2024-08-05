@@ -5,6 +5,8 @@ from flask_httpauth import HTTPBasicAuth
 
 import uuid
 
+from notifications import notificationsResource
+
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
@@ -48,6 +50,7 @@ class Notification(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     message=db.Column(db.String(50))
     isReady=db.Column(db.Integer)
+
 
 @app.route('/')
 @auth.login_required
