@@ -6,12 +6,15 @@ from flask_httpauth import HTTPBasicAuth
 import uuid
 
 from notifications import notificationsResource
+from services import servicesResource
+from job import JobResource
+from appointment import appointmentResource
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'secret_key'
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@localhost:3306/mghs"   
 
 auth = HTTPBasicAuth()
 
@@ -22,11 +25,11 @@ class User(db.Model):
     public_id=db.Column(db.String(50), unique=True)
     name=db.Column(db.String(50))
     username=db.Column(db.String(50))
-    password=db.Column(db.String(50))
+    password=db.Column(db.String(110))
     admin=db.Column(db.Boolean)
     phone_number=db.Column(db.String(50))
 
-class Service():
+class Service(db.Model):
     id =db.Column(db.Integer, primary_key=True)
     name=db.Column(db.String(50))
     description=db.Column(db.String(50))
@@ -37,7 +40,7 @@ class Appointment(db.Model):
     appointment_id=db.Column(db.Integer, primary_key=True)
     user_id=db.Column(db.Integer, db.ForeignKey("user.id"))
     service_id=db.Column(db.Integer, db.ForeignKey("user.id"))
-    status=db.Column(db.String(50), primary_key=True)
+    status=db.Column(db.String(50))
 
 class Job(db.Model):
     id=db.Column(db.Integer, primary_key=True)
@@ -51,6 +54,10 @@ class Notification(db.Model):
     message=db.Column(db.String(50))
     isReady=db.Column(db.Integer)
 
+resource_notif = notificationsResource(app, db, Notification)
+resource_service = servicesResource(app, db, Service)
+resource_job = JobResource(app, db, Job)
+resource_appoinment = appointmentResource(app, db, Appointment)
 
 @app.route('/')
 @auth.login_required
