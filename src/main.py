@@ -73,13 +73,15 @@ resource_job = JobResource(app, db, Job)
 resource_appoinment = appointmentResource(app, db, Appointment)
 
 @app.route('/')
-@auth.login_required
+@basic_auth.login_required
 def dashboard():
     return "Hello World"
 
 @app.route('/user', methods=['GET'])
-@auth.login_required
+@basic_auth.login_required(role="admin")
 def get_all_users():
+
+    print(basic_auth.current_user)
 
     users = User.query.all()
     output=[]
@@ -100,6 +102,7 @@ def get_all_users():
     return jsonify({"users": output})
 
 @app.route('/user/<public_id>', methods=['GET'])
+@basic_auth.login_required
 def get_one_user(public_id):
 
     user = User.query.filter_by(public_id=public_id).first()
@@ -119,7 +122,6 @@ def get_one_user(public_id):
     return jsonify({'user': user_data})
 
 @app.route('/user', methods=['POST'])
-@auth.login_required
 def create_user():
 
     data = request.get_json()
@@ -144,6 +146,7 @@ def create_user():
         return jsonify({"message": "missing/incorrect data"})
     
 @app.route('/user/<public_id>', methods=['DELETE'])
+@basic_auth.login_required(role="admin")
 def delete_user(public_id):
     notif = User.query.filter_by(public_id=public_id).first()
 
@@ -157,6 +160,7 @@ def delete_user(public_id):
     return jsonify({'message': 'user has been deleted'})
 
 @app.route('/user/<public_id>/promote', methods=['PUT'])
+@basic_auth.login_required(role="admin")
 def promote_user(public_id):
 
     user = User.query.filter_by(public_id=public_id).first()
@@ -171,6 +175,7 @@ def promote_user(public_id):
     return jsonify({'message': 'user has been promoted'})
 
 @app.route('/user/<public_id>/demote', methods=['PUT'])
+@basic_auth.login_required(role="admin")
 def demote_user(public_id):
 
     user = User.query.filter_by(public_id=public_id).first()
@@ -202,8 +207,20 @@ def verify_password(username, password):
 
     user = User.query.filter_by(username=username).first()
 
+
     if user and check_password_hash(user.password, password):
         return username
     
+@basic_auth.get_user_roles
+def get_user_roles(username):
+
+    try:
+        user = User.query.filter_by(username=username).first()
+        return "admin" if user.admin else "user"
+    except:
+        return "user"
+
+
+print("asdas")
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
