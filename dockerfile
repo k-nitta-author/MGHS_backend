@@ -1,11 +1,12 @@
 FROM python:3.12
 
-ADD main.py .
+COPY /src /src/
 
 EXPOSE 5000
 
 RUN pip install Flask-SQLAlchemy
 RUN pip install flask
 RUN pip install flask_httpauth
+RUN pip install mysqlclient
 
-CMD [ "python", "./main.py"]
+CMD ["python", "./src/main.py"]

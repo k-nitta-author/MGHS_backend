@@ -28,7 +28,9 @@ class appointmentResource:
                      "id":appointment.appointment_id,
                      "user_id":appointment.user_id,
                      "service_id": appointment.service_id,
-                     "status":appointment.status
+                     "status":appointment.status,
+                     "appointment_date":appointment.appointment_date,
+                     "appointment_time":appointment.appointment_time,
 
                 }
 
@@ -52,9 +54,9 @@ class appointmentResource:
                      "id":appointment.appointment_id,
                      "user_id":appointment.user_id,
                      "service_id": appointment.service_id,
-                     "status":appointment.status
-
-
+                     "status":appointment.status,
+                     "appointment_date":appointment.appointment_date,
+                     "appointment_time":appointment.appointment_time,
             }
 
             return jsonify({'appointment': appointment_data})
@@ -67,9 +69,11 @@ class appointmentResource:
 
             appointment = self.model(
 
-                     user_id=data['user_id'],
-                     service_id=data['service_id'],
-                     status=data['status'],
+                    user_id=data['user_id'],
+                    service_id=data['service_id'],
+                    status=data['status'],
+                    appointment_date=data['appointment_date'],
+                    appointment_time=data['appointment_time']
 
                     )
             

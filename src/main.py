@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 
-from flask_httpauth import HTTPBasicAuth
+
+from flask_httpauth import HTTPTokenAuth, HTTPBasicAuth
 
 import uuid
 
@@ -12,11 +13,20 @@ from appointment import appointmentResource
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from datetime import datetime
+
 app = Flask(__name__)
 app.secret_key = 'secret_key'
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@localhost:3306/mghs"   
 
-auth = HTTPBasicAuth()
+# connection string
+#app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@localhost:3306/mghs"
+
+# connection string for docker
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@host.docker.internal:3306/mghs"   
+
+
+auth = HTTPTokenAuth('Bearer')
+basic_auth = HTTPBasicAuth()
 
 db = SQLAlchemy(app)
 
@@ -24,35 +34,38 @@ class User(db.Model):
     id =db.Column(db.Integer, primary_key=True)
     public_id=db.Column(db.String(50), unique=True)
     name=db.Column(db.String(50))
-    username=db.Column(db.String(50))
+    username=db.Column(db.String(50), unique=True, nullable=False)
     password=db.Column(db.String(110))
     admin=db.Column(db.Boolean)
     phone_number=db.Column(db.String(50))
 
 class Service(db.Model):
     id =db.Column(db.Integer, primary_key=True)
-    name=db.Column(db.String(50))
-    description=db.Column(db.String(50))
-    availability=db.Column(db.String(50))
-    price=db.Column(db.DECIMAL())
+    name=db.Column(db.String(50), unique=True)
+    description=db.Column(db.String(200))
+    availability=db.Column(db.Boolean)
+    price = db.Column(db.DECIMAL(10, 2))
 
 class Appointment(db.Model):
     appointment_id=db.Column(db.Integer, primary_key=True)
     user_id=db.Column(db.Integer, db.ForeignKey("user.id"))
     service_id=db.Column(db.Integer, db.ForeignKey("user.id"))
-    status=db.Column(db.String(50))
+    status=db.Column(db.String(50), nullable=False)
+    appointment_date=db.Column(db.Date, nullable=False)
+    appointment_time=db.Column(db.Time, nullable=False)
 
 class Job(db.Model):
     id=db.Column(db.Integer, primary_key=True)
-    jobTitle=db.Column(db.String(50))
-    jobRequest=db.Column(db.String(100))
+    jobTitle=db.Column(db.String(50), unique=True)
     jobRequirements=db.Column(db.String(100))
+    available=db.Column(db.Boolean)
     
 
 class Notification(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     message=db.Column(db.String(50))
     isReady=db.Column(db.Integer)
+    timeCreated=db.Column(db.DateTime(timezone=True), server_default=db.func.now())
 
 resource_notif = notificationsResource(app, db, Notification)
 resource_service = servicesResource(app, db, Service)
@@ -65,6 +78,7 @@ def dashboard():
     return "Hello World"
 
 @app.route('/user', methods=['GET'])
+@auth.login_required
 def get_all_users():
 
     users = User.query.all()
@@ -93,8 +107,6 @@ def get_one_user(public_id):
     if not user:
         return jsonify({'message': 'No ser found'})
 
-
-
     user_data = {}
     user_data['id'] = user.id
     user_data['name'] = user.name
@@ -107,6 +119,7 @@ def get_one_user(public_id):
     return jsonify({'user': user_data})
 
 @app.route('/user', methods=['POST'])
+@auth.login_required
 def create_user():
 
     data = request.get_json()
@@ -122,47 +135,75 @@ def create_user():
                     username=data['username']
                     )
 
-    db.session.add(new_user)
-    db.session.commit()
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({'message': 'new user created'})
 
-    return jsonify({'message': 'new user created'})
-
+    except:
+        return jsonify({"message": "missing/incorrect data"})
+    
 @app.route('/user/<public_id>', methods=['DELETE'])
 def delete_user(public_id):
-    user = User.query.filter_by(public_id=public_id).first()
+    notif = User.query.filter_by(public_id=public_id).first()
 
-    if not user:
-        return jsonify({'message': 'No ser found'})
+    if not notif:
+        return jsonify({'message': 'No user found'})
     
 
-    db.session.delete(user)
+    db.session.delete(notif)
     db.session.commit()
 
     return jsonify({'message': 'user has been deleted'})
 
-@app.route('/user', methods=['PUT'])
+@app.route('/user/<public_id>/promote', methods=['PUT'])
 def promote_user(public_id):
 
     user = User.query.filter_by(public_id=public_id).first()
 
     if not user:
         return jsonify({'message': 'No ser found'})
-    
+
+    user.admin=True    
 
     db.session.commit()
 
-    return jsonify({'message': 'user has been updated'})
+    return jsonify({'message': 'user has been promoted'})
+
+@app.route('/user/<public_id>/demote', methods=['PUT'])
+def demote_user(public_id):
+
+    user = User.query.filter_by(public_id=public_id).first()
+
+    if not user:
+        return jsonify({'message': 'No ser found'})
+
+    user.admin=False    
+
+    db.session.commit()
+
+    return jsonify({'message': 'user has been demoted'})
+
+# one is intended to get the token by logging in if this is possible
+@auth.verify_token
+def verify_token(token):
+
+    tokens= {"token1":"213"}
 
 
-@app.route('/login')
-@auth.verify_password
+    if token == "ted": return "user"
+
+    return False
+
+
+# currently untested
+@basic_auth.verify_password
 def verify_password(username, password):
 
-    user = User.query.filter(User.username == username).first()
+    user = User.query.filter_by(username=username).first()
 
-    if user and check_password_hash(user.password , password):
-
-        return user.username   
+    if user and check_password_hash(user.password, password):
+        return username
     
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')

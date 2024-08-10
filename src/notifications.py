@@ -28,6 +28,8 @@ class notificationsResource:
                 "id": notif.id,
                 "message": notif.message,
                 "isReady": notif.isReady,
+                "timeCreated":notif.timeCreated
+
                 }
 
                 output.append(notif_data)
@@ -49,6 +51,7 @@ class notificationsResource:
                 "id": notif.id,
                 "message": notif.id,
                 "isReady": notif.id,
+                "timeCreated":notif.timeCreated
             }
 
             return jsonify({'user': notif_data})
@@ -62,7 +65,8 @@ class notificationsResource:
             new_user = self.model(
 
                     message=data['message'],
-                    isReady=data['isReady']
+                    isReady=data['isReady'],
+                    timeCreated=data['timeCreated']
 
                     )
             

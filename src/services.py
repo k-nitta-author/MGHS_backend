@@ -32,6 +32,8 @@ class servicesResource:
                 "price":service.price
                 }
 
+                
+
 
                 output.append(service_data)
 
@@ -72,11 +74,14 @@ class servicesResource:
                     price=data['price']
 
                     )
-            
-            self.db.session.add(service)
-            self.db.session.commit()
+            try:
+                self.db.session.add(service)
+                self.db.session.commit()
 
-            return jsonify({'message': 'new service created'})
+                return jsonify({'message': 'new service created'})
+            
+            except:
+                return jsonify({'message': 'incorrect-wrong or missing data'})
 
         @app.route('/service/<id>', methods=['DELETE'])
         def delete_service(id):
