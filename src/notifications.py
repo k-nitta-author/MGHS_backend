@@ -49,12 +49,40 @@ class notificationsResource:
 
             notif_data = {
                 "id": notif.id,
-                "message": notif.id,
-                "isReady": notif.id,
+                "message": notif.message,
+                "isReady": notif.isReady,
+                "user":notif.user,
                 "timeCreated":notif.timeCreated
             }
 
             return jsonify({'user': notif_data})
+        
+        #TODO: GET NOTIFICATION BY USER ID
+        @app.route('/notification/user/<id>', methods=['GET'])
+        def get_notification_by_user(id):
+            notifs = self.model().query.filter_by(user=id)
+
+            print(notifs)
+
+            if not notifs:
+                return jsonify({'message': 'No ser found'})
+
+
+            user_notifs = []
+
+            for notif in notifs:
+                notif_data = {
+                    "id": notif.id,
+                    "message": notif.message,
+                    "isReady": notif.isReady,
+                    "user":notif.user,
+                    "timeCreated":notif.timeCreated
+                }
+
+                user_notifs.append(notif_data)
+
+            return jsonify({'user': user_notifs})
+
 
         @app.route('/notification', methods=['POST'])
         def create_notif():
@@ -66,6 +94,7 @@ class notificationsResource:
 
                     message=data['message'],
                     isReady=data['isReady'],
+                    user=data['user'],
                     timeCreated=data['timeCreated']
 
                     )

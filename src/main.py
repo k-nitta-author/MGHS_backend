@@ -56,7 +56,7 @@ class Appointment(db.Model):
 
 class Job(db.Model):
     id=db.Column(db.Integer, primary_key=True)
-    jobTitle=db.Column(db.String(50), unique=True)
+    jobTitle=db.Column(db.String(50))
     jobRequirements=db.Column(db.String(100))
     available=db.Column(db.Boolean)
     
@@ -64,6 +64,7 @@ class Job(db.Model):
 class Notification(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     message=db.Column(db.String(50))
+    user=db.Column(db.Integer, db.ForeignKey("user.id"))
     isReady=db.Column(db.Integer)
     timeCreated=db.Column(db.DateTime(timezone=True), server_default=db.func.now())
 
