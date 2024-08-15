@@ -2,8 +2,6 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 
 
-
-
 class servicesResource:
 
     def __init__(self, app: Flask, db: SQLAlchemy, model: object) -> None:

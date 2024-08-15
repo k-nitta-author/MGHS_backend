@@ -32,12 +32,19 @@ db = SQLAlchemy(app)
 
 class User(db.Model):
     id =db.Column(db.Integer, primary_key=True)
-    public_id=db.Column(db.String(50), unique=True)
-    name=db.Column(db.String(50))
+    public_id=db.Column(db.String(50), unique=True)    
+    surname=db.Column(db.String(50))
+    givenname=db.Column(db.String(50))
+    dob=db.Column(db.Date, nullable=False)
+    email=db.Column(db.String(50))
+    register_date=db.Column(db.Date)
     username=db.Column(db.String(50), unique=True, nullable=False)
     password=db.Column(db.String(110))
     admin=db.Column(db.Boolean)
     phone_number=db.Column(db.String(50))
+
+    # not yet imlpemented in user resource
+    active=db.Column(db.Boolean)
 
 class Service(db.Model):
     id =db.Column(db.Integer, primary_key=True)
@@ -49,11 +56,10 @@ class Service(db.Model):
 class Appointment(db.Model):
     appointment_id=db.Column(db.Integer, primary_key=True)
     user_id=db.Column(db.Integer, db.ForeignKey("user.id"))
-    service_id=db.Column(db.Integer, db.ForeignKey("user.id"))
+    service_id=db.Column(db.Integer, db.ForeignKey("service.id"))
     status=db.Column(db.String(50), nullable=False)
     appointment_date=db.Column(db.Date, nullable=False)
-    appointment_time=db.Column(db.Time, nullable=False)
-
+    
 class Job(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     jobTitle=db.Column(db.String(50))
@@ -120,6 +126,12 @@ def get_one_user(public_id):
     user_data['phone_number']=user.phone_number
     user_data['public_id'] = user.public_id
 
+    user_data['surname'] = user.surname
+    user_data['givenname'] = user.givenname
+    user_data['dob'] = user.dob
+    user_data['email'] = user.email
+    user_data['register_date'] = user.register_date
+
     return jsonify({'user': user_data})
 
 @app.route('/user', methods=['POST'])
@@ -132,10 +144,15 @@ def create_user():
     new_user = User(
                     public_id=str(uuid.uuid4()),
                     phone_number=data['phone_number'],
-                    name=data['name'],
+                    givenname=data['givenname'],
+                    surname=data['surname'],
                     password=hashed_password,
                     admin=False,
-                    username=data['username']
+                    username=data['username'],
+                    dob=data['dob'],
+                    email=data['email'],
+                    register_date=datetime.now().date()
+
                     )
 
     try:

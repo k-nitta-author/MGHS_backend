@@ -19,8 +19,6 @@ class UserResource:
             users = self.model().query.all()
             output=[]
 
-
-
             user_data = []
 
             for user in users:

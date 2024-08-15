@@ -2,6 +2,9 @@ from main import app, db, User
 from flask_sqlalchemy import SQLAlchemy
 
 from werkzeug.security import generate_password_hash
+
+from datetime import datetime
+
 import uuid
 
 # This sets up the default admin user to log into the system.
@@ -12,11 +15,15 @@ def create_default_admin_user(db: SQLAlchemy):
 
     admin_user = User(
                     public_id=str(uuid.uuid4()),
-                    phone_number=None,
-                    name="John Doe",
+                    givenname="John",
+                    surname="Doe",
                     password=hashed_password,
                     admin=True,
-                    username="admin"
+                    username="admin",
+                    phone_number="",
+                    register_date=datetime.now().date(),
+                    dob="2001-1-1",
+                    email="test.joe@test.com"
                     )
 
 
@@ -27,4 +34,13 @@ if __name__ == "__main__":
     with app.app_context():
         
         db.create_all()
-        #create_default_admin_user(db)
+
+
+        # try to create admin user
+        # if admin user alraedy exists print message
+        try:
+            create_default_admin_user(db)
+            print("created admin user")
+
+        except:
+            print("already created")
