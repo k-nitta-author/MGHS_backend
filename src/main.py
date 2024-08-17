@@ -10,6 +10,7 @@ from notifications import notificationsResource
 from services import servicesResource
 from job import JobResource
 from appointment import appointmentResource
+from jobApplication import JobApplicationResource
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -65,7 +66,22 @@ class Job(db.Model):
     jobTitle=db.Column(db.String(50))
     jobRequirements=db.Column(db.String(100))
     available=db.Column(db.Boolean)
-    
+    description=db.Column(db.String(200))
+    max_salary=db.Column(db.DECIMAL(10, 2))
+    min_salary=db.Column(db.DECIMAL(10, 2))
+
+    __table_args__ = (
+        db.CheckConstraint('min_salary <= max_salary', name='check_salaries'),
+    )
+
+class JobApplication(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    job_id = db.Column(db.Integer, db.ForeignKey('job.id'), primary_key=True)
+    interview_date = db.Column(db.DateTime)
+    application_date=db.Column(db.Date)
+    application_source = db.Column(db.String(50))
+    user = db.relationship('User', backref=db.backref('job_applications', cascade="all, delete-orphan"))
+    job = db.relationship('Job', backref=db.backref('job_applications', cascade="all, delete-orphan"))
 
 class Notification(db.Model):
     id=db.Column(db.Integer, primary_key=True)
@@ -78,6 +94,7 @@ resource_notif = notificationsResource(app, db, Notification)
 resource_service = servicesResource(app, db, Service)
 resource_job = JobResource(app, db, Job)
 resource_appoinment = appointmentResource(app, db, Appointment)
+resource_job_application = JobApplicationResource(app, db, JobApplication)
 
 @app.route('/')
 @basic_auth.login_required
@@ -96,12 +113,17 @@ def get_all_users():
     for user in users:
         user_data = {}
         user_data['id'] = user.id
-        user_data['name'] = user.name
         user_data['username'] = user.username
         user_data['password'] = user.password
         user_data['admin'] = user.admin
         user_data['phone_number']=user.phone_number
         user_data['public_id'] = user.public_id
+
+        user_data['surname'] = user.surname
+        user_data['givenname'] = user.givenname
+        user_data['dob'] = user.dob
+        user_data['email'] = user.email
+        user_data['register_date'] = user.register_date
 
         output.append(user_data)
 
