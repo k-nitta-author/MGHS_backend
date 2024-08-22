@@ -17,6 +17,13 @@ class InquiryResource:
 
     def register_routes(self, app: Flask, db: SQLAlchemy) -> None:
 
+
+
+
+        @app.route('/inquiry/<id>/<job_id>/send', methods=['POST'])
+        def sendJobApplication(id, job_id):
+            pass
+
         """
         EXAMPLE REQUEST FORMAT
         ----------------
@@ -28,6 +35,7 @@ class InquiryResource:
         @app.route('/inquiry/<id>/send', methods=['POST'])
         def sendInquiry(id):
 
+
             def create_formatted_inquiry(data: dict, address: str, user: object) -> EmailMessage:
 
                 # create a formatted subject line for emails created by this backend
@@ -38,14 +46,25 @@ class InquiryResource:
                 i_subject = data['subject']
                 final_subject = f"Optiflow | Inquiry | {u_fullname} | {i_subject}" 
 
+
+                content : str = data['body']
+
+                formatted_content : str = create_formatted_content(content) 
+
                 # initialize email; set from, to, subject, content 
                 email = EmailMessage()
                 email['Subject'] = final_subject
                 email['From'] = environ.get('OPTIFLOW_ACCOUNTNAME')
                 email['To'] = address
-                email.set_content(data['body'])
+                email.set_content(formatted_content)
 
                 return email
+            
+            # TODO: ADD PROPER FORMATTING TO CONTENT
+            # add a simple header to content that indicates the source as OptiFlow
+            # return the content with this header
+            def create_formatted_content(body: str) -> str:
+                return body
 
             user = self.sender().query.filter_by(id=id).first()
 
@@ -75,4 +94,5 @@ class InquiryResource:
                     )
 
             return jsonify({'message': "email sent!"})
+
 

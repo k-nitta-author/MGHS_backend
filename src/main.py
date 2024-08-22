@@ -11,19 +11,22 @@ from services import servicesResource
 from job import JobResource
 from appointment import appointmentResource
 from jobApplication import JobApplicationResource
+from inquiry import InquiryResource
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from datetime import datetime
 
+from os import environ
+
 app = Flask(__name__)
 app.secret_key = 'secret_key'
 
 # connection string
-#app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@localhost:3306/mghs"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@localhost:3306/mghs"
 
 # connection string for docker
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@host.docker.internal:3306/mghs"   
+#app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@host.docker.internal:3306/mghs"   
 
 
 auth = HTTPTokenAuth('Bearer')
@@ -94,7 +97,9 @@ resource_notif = notificationsResource(app, db, Notification)
 resource_service = servicesResource(app, db, Service)
 resource_job = JobResource(app, db, Job)
 resource_appoinment = appointmentResource(app, db, Appointment)
-resource_job_application = JobApplicationResource(app, db, JobApplication)
+resource_job_application = JobApplicationResource(app, db, JobApplication, User, Job)
+
+resource_inquiry = InquiryResource(app, db, User)
 
 @app.route('/')
 @basic_auth.login_required
@@ -263,4 +268,16 @@ def get_user_roles(username):
 
 print("asdas")
 if __name__ == '__main__':
+
+
+    # CREATE A COMMA SEPARATED LIST OF MGHS EMAILS WHICH SHOULD RECIEVE NOTIFICATIONS OF NEW JOB APPLICATIONS
+    environ['JOB_APPLICANT_EMAIL_ADDRESS_LIST'] = "k.nitta.it@gmail.com"
+
+    # CREATE A COMMA SEPARATED LIST OF MGHS EMAILS WHICH SHOULD RECIEVE NOTIFICATIONS OF INQUIRIES
+    environ['INQUIRY_EMAIL_ADDRESS_LIST'] = "joshuapicato2016@gmail.com"
+
+    # SET UP ENVIRONMENT VARIABLES FOR THE GMAIL ACCOUNT
+    environ['OPTIFLOW_ACCOUNTNAME'] = "optiflow.mghs@gmail.com"
+    environ['OPTIFLOW_PASSWORD'] = "mhzz opbh fpdf kxgh"
+
     app.run(debug=True, host='0.0.0.0')
