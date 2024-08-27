@@ -27,8 +27,12 @@ class JobResource:
                 "id": job.id,
                 "jobTitle": job.jobTitle,
                 "jobRequirements": job.jobRequirements,
-                "available": job.available
+                "available": job.available,
+                "max_salary": job.max_salary,
+                "min_salary": job.min_salary
                 }
+
+
 
 
                 output.append(service_data)
@@ -49,7 +53,9 @@ class JobResource:
                 "id": job.id,
                 "jobTitle": job.jobTitle,
                 "jobRequirements": job.jobRequirements,
-                "available": job.available
+                "available": job.available,
+                "max_salary": job.max_salary,
+                "min_salary": job.min_salary
                 }
 
 
@@ -70,7 +76,9 @@ class JobResource:
                 "id": job.id,
                 "jobTitle": job.jobTitle,
                 "jobRequirements": job.jobRequirements,
-                "available": job.available
+                "available": job.available,
+                "max_salary": job.max_salary,
+                "min_salary": job.min_salary
                 }
 
 
@@ -94,7 +102,9 @@ class JobResource:
                 "id": job.id,
                 "jobTitle": job.jobTitle,
                 "jobRequirements": job.jobRequirements,
-                "available": job.available
+                "available": job.available,
+                "max_salary": job.max_salary,
+                "min_salary": job.min_salary
             }
 
             return jsonify({'job': job_data})
@@ -110,7 +120,9 @@ class JobResource:
                     jobTitle=data['jobTitle'],
                     jobRequirements=data['jobRequirements'],
                     available=data['available'],
-                    description=data['description']
+                    description=data['description'],
+                    max_salary=data['max_salary'],
+                    min_salary=data['min_salary']
 
                     )
             

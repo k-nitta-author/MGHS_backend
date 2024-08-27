@@ -1,8 +1,12 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 
+from calendar import month_abbr
 
-
+from email.message import EmailMessage
+from smtplib import SMTP, SMTP_SSL
+import ssl
+from os import environ
 
 class appointmentResource:
 
@@ -21,7 +25,6 @@ class appointmentResource:
             appointments = self.model().query.all()
             output=[]
 
-            appointment_data = []
 
             for appointment in appointments:
                 appointment_data = {
@@ -30,7 +33,6 @@ class appointmentResource:
                      "service_id": appointment.service_id,
                      "status":appointment.status,
                      "appointment_date":appointment.appointment_date,
-                     "appointment_time":appointment.appointment_time,
 
                 }
 
@@ -39,7 +41,7 @@ class appointmentResource:
 
             return jsonify({"appointments": output})
 
-        @app.route('/service/<id>', methods=['GET'])
+        @app.route('/appointment/<id>', methods=['GET'])
         def get_one_appoinment(id):
 
             appointment = self.model().query.filter_by(id=id).first()
@@ -56,10 +58,107 @@ class appointmentResource:
                      "service_id": appointment.service_id,
                      "status":appointment.status,
                      "appointment_date":appointment.appointment_date,
-                     "appointment_time":appointment.appointment_time,
             }
 
             return jsonify({'appointment': appointment_data})
+        
+        @app.route('/appointment/month/<month>', methods=['GET'])
+        def get_by_month_appointment(month: int):
+
+            month_idx = int(month)
+
+            if month_idx > 12 or month_idx < 1: return jsonify({"message": "invalid month index"})
+
+            appointments = self.model().query.filter(db.extract('month', self.model.appointment_date)==month_idx).all()
+
+            current_abbreviation = month_abbr[month_idx]
+
+            output=[]
+
+            for appointment in appointments:
+                appointment_data = {
+                     "id":appointment.appointment_id,
+                     "user_id":appointment.user_id,
+                     "service_id": appointment.service_id,
+                     "status":appointment.status,
+                     "appointment_date":appointment.appointment_date,
+
+                }
+
+                output.append(appointment_data)
+
+            return jsonify({"message": output})
+        
+
+        @app.route('/appointment/user/<user_id>', methods=['GET'])
+        def get_by_user_appointment(user_id: int):
+
+
+            appointments = self.model().query.filter_by(user_id=user_id)
+
+            output=[]
+
+            for appointment in appointments:
+                appointment_data = {
+                     "id":appointment.appointment_id,
+                     "user_id":appointment.user_id,
+                     "service_id": appointment.service_id,
+                     "status":appointment.status,
+                     "appointment_date":appointment.appointment_date,
+
+                }
+
+                output.append(appointment_data)
+
+            return jsonify({"message": output})
+        
+        """
+            STATUS SHOULD BE ONLY BETWEEN PENDING, IN_REVIEW, APPROVED, AND REJECTED
+        
+        """
+        @app.route('/appointment/status/<status>', methods=['GET'])
+        def get_by_status_appointment(status: str):
+
+
+            appointments = self.model().query.filter_by(status=status)
+
+            output=[]
+
+            for appointment in appointments:
+                appointment_data = {
+                     "id":appointment.appointment_id,
+                     "user_id":appointment.user_id,
+                     "service_id": appointment.service_id,
+                     "status":appointment.status,
+                     "appointment_date":appointment.appointment_date,
+
+                }
+
+                output.append(appointment_data)
+
+            return jsonify({"message": output})
+        
+        @app.route('/appointment/service/<service_id>', methods=['GET'])
+        def get_by_service_appointment(service_id: int):
+
+
+            appointments = self.model().query.filter_by(service_id=service_id)
+
+            output=[]
+
+            for appointment in appointments:
+                appointment_data = {
+                     "id":appointment.appointment_id,
+                     "user_id":appointment.user_id,
+                     "service_id": appointment.service_id,
+                     "status":appointment.status,
+                     "appointment_date":appointment.appointment_date,
+
+                }
+
+                output.append(appointment_data)
+
+            return jsonify({"message": output})
 
         @app.route('/appointment', methods=['POST'])
         def create_appointment():
@@ -71,9 +170,8 @@ class appointmentResource:
 
                     user_id=data['user_id'],
                     service_id=data['service_id'],
-                    status=data['status'],
-                    appointment_date=data['appointment_date'],
-                    appointment_time=data['appointment_time']
+                    status='PENDING',
+                    appointment_date=None,
 
                     )
             

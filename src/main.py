@@ -28,7 +28,6 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@localhost:3306/mgh
 # connection string for docker
 #app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@host.docker.internal:3306/mghs"   
 
-
 auth = HTTPTokenAuth('Bearer')
 basic_auth = HTTPBasicAuth()
 
@@ -45,10 +44,10 @@ class User(db.Model):
     username=db.Column(db.String(50), unique=True, nullable=False)
     password=db.Column(db.String(110))
     admin=db.Column(db.Boolean)
+    handles_job_applications=db.Column(db.Boolean)
+    handles_inquiries=db.Column(db.Boolean)
     phone_number=db.Column(db.String(50))
 
-    # not yet imlpemented in user resource
-    active=db.Column(db.Boolean)
 
 class Service(db.Model):
     id =db.Column(db.Integer, primary_key=True)
@@ -83,6 +82,7 @@ class JobApplication(db.Model):
     interview_date = db.Column(db.DateTime)
     application_date=db.Column(db.Date)
     application_source = db.Column(db.String(50))
+    status = db.Column(db.String(10))
     user = db.relationship('User', backref=db.backref('job_applications', cascade="all, delete-orphan"))
     job = db.relationship('Job', backref=db.backref('job_applications', cascade="all, delete-orphan"))
 
@@ -93,12 +93,11 @@ class Notification(db.Model):
     isReady=db.Column(db.Integer)
     timeCreated=db.Column(db.DateTime(timezone=True), server_default=db.func.now())
 
-resource_notif = notificationsResource(app, db, Notification)
+resource_notif = notificationsResource(app, db, Notification, User)
 resource_service = servicesResource(app, db, Service)
 resource_job = JobResource(app, db, Job)
 resource_appoinment = appointmentResource(app, db, Appointment)
 resource_job_application = JobApplicationResource(app, db, JobApplication, User, Job)
-
 resource_inquiry = InquiryResource(app, db, User)
 
 @app.route('/')
@@ -130,8 +129,10 @@ def get_all_users():
         user_data['email'] = user.email
         user_data['register_date'] = user.register_date
 
-        output.append(user_data)
+        user_data['handles_inquiries'] = user.handles_inquiries
+        user_data['handles_job_applications'] = user.handles_job_applications
 
+        output.append(user_data)
 
     return jsonify({"users": output})
 
@@ -159,6 +160,9 @@ def get_one_user(public_id):
     user_data['email'] = user.email
     user_data['register_date'] = user.register_date
 
+    user_data['handles_inquiries'] = user.handles_inquiries
+    user_data['handles_job_applications'] = user.handles_job_applications
+
     return jsonify({'user': user_data})
 
 @app.route('/user', methods=['POST'])
@@ -178,7 +182,9 @@ def create_user():
                     username=data['username'],
                     dob=data['dob'],
                     email=data['email'],
-                    register_date=datetime.now().date()
+                    register_date=datetime.now().date(),
+                    handles_inquiries = False,
+                    handles_job_applications = False
 
                     )
 
@@ -189,6 +195,37 @@ def create_user():
 
     except:
         return jsonify({"message": "missing/incorrect data"})
+    
+
+@app.route('/user/mail/inquiry/<public_id>', methods=['PUT'])
+@basic_auth.login_required(role="admin")
+def set_inquiry_mailing_group_access_user(public_id):
+    user = User.query.filter_by(public_id=public_id).first()
+
+    data = request.get_json()
+    user.handles_inquiries = data['handles_inquiries']
+
+    if not user:
+        return jsonify({'message': 'No user found'})
+    
+    db.session.commit()
+
+    return jsonify({'message': 'user has been deleted'})
+
+@app.route('/user/mail/applications/<public_id>', methods=['PUT'])
+@basic_auth.login_required(role="admin")
+def set_application_mailing_group_access_user(public_id):
+    user = User.query.filter_by(public_id=public_id).first()
+
+    data = request.get_json()
+    user.handles_job_applications = data['handles_job_applications']
+
+    if not user:
+        return jsonify({'message': 'No user found'})
+    
+    db.session.commit()
+
+    return jsonify({'message': 'user has been deleted'})
     
 @app.route('/user/<public_id>', methods=['DELETE'])
 @basic_auth.login_required(role="admin")
@@ -265,10 +302,7 @@ def get_user_roles(username):
     except:
         return "user"
 
-
-print("asdas")
 if __name__ == '__main__':
-
 
     # CREATE A COMMA SEPARATED LIST OF MGHS EMAILS WHICH SHOULD RECIEVE NOTIFICATIONS OF NEW JOB APPLICATIONS
     environ['JOB_APPLICANT_EMAIL_ADDRESS_LIST'] = "k.nitta.it@gmail.com"

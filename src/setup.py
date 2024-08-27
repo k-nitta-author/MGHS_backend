@@ -7,6 +7,8 @@ from datetime import datetime
 
 import uuid
 
+from os import environ
+
 # This sets up the default admin user to log into the system.
 def create_default_admin_user(db: SQLAlchemy):
     
@@ -23,7 +25,9 @@ def create_default_admin_user(db: SQLAlchemy):
                     phone_number="",
                     register_date=datetime.now().date(),
                     dob="2001-1-1",
-                    email="test.joe@test.com"
+                    email="test.joe@test.com",
+                    handles_inquiries=True,
+                    handles_job_applications=True
                     )
 
 
@@ -31,6 +35,19 @@ def create_default_admin_user(db: SQLAlchemy):
     db.session.commit()
 
 if __name__ == "__main__":
+
+
+    # CREATE A COMMA SEPARATED LIST OF MGHS EMAILS WHICH SHOULD RECIEVE NOTIFICATIONS OF NEW JOB APPLICATIONS
+    environ['JOB_APPLICANT_EMAIL_ADDRESS_LIST'] = "k.nitta.it@gmail.com"
+
+    # CREATE A COMMA SEPARATED LIST OF MGHS EMAILS WHICH SHOULD RECIEVE NOTIFICATIONS OF INQUIRIES
+    environ['INQUIRY_EMAIL_ADDRESS_LIST'] = "k.nitta.it@gmail.com"
+
+    # SET UP ENVIRONMENT VARIABLES FOR THE GMAIL ACCOUNT
+    environ['OPTIFLOW_ACCOUNTNAME'] = "optiflow.mghs@gmail.com"
+    environ['OPTIFLOW_PASSWORD'] = "mhzz opbh fpdf kxgh"
+
+
     with app.app_context():
         
         db.create_all()

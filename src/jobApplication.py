@@ -34,8 +34,8 @@ class JobApplicationResource:
                 "job_id":job_application.job_id,
                 "interview_date":job_application.interview_date,
                 "application_date":job_application.application_date,
-                "application_source":job_application.application_source
-
+                "application_source":job_application.application_source,
+                "status": job_application.status
                 }
 
 
@@ -62,7 +62,8 @@ class JobApplicationResource:
                     "job_id":job_application.job_id,
                     "interview_date":job_application.interview_date,
                     "application_date":job_application.application_date,
-                    "application_source":job_application.application_source
+                    "application_source":job_application.application_source,
+                    "status":job_application.status
 
                 }
 
@@ -87,8 +88,33 @@ class JobApplicationResource:
                     "job_id":job_application.job_id,
                     "interview_date":job_application.interview_date,
                     "application_date":job_application.application_date,
-                    "application_source":job_application.application_source
+                    "application_source":job_application.application_source,
+                    "status":job_application.status
+                }
 
+                output.append(job_application_data)
+
+            return jsonify({'job applications': output})
+        
+        @app.route('/job_application/status/<status>', methods=['GET'])
+        def get_by_status_job_application(status):
+
+            job_applications = self.model().query.filter_by(status=status).all()
+
+            if not job_applications:
+                return jsonify({'message': 'No job_application found'})
+            
+            output=[]
+            
+            for job_application in job_applications: 
+
+                job_application_data = {
+                    "user_id":job_application.user_id,
+                    "job_id":job_application.job_id,
+                    "interview_date":job_application.interview_date,
+                    "application_date":job_application.application_date,
+                    "application_source":job_application.application_source,
+                    "status":job_application.status
                 }
 
                 output.append(job_application_data)
@@ -108,7 +134,8 @@ class JobApplicationResource:
                 "job_id":job_application.job_id,
                 "interview_date":job_application.interview_date,
                 "application_date":job_application.application_date,
-                "application_source":job_application.application_source
+                "application_source":job_application.application_source,
+                "status":job_application.status
 
             }
 
@@ -126,7 +153,8 @@ class JobApplicationResource:
                     job_id =data['job_id'],
                     interview_date = data['interview_date'],
                     application_date=data['application_date'],
-                    application_source=data['application_source']
+                    application_source=data['application_source'],
+                    status=data['status']
 
                     )
             
@@ -136,26 +164,103 @@ class JobApplicationResource:
             return jsonify({'message': 'new job_application created'})
         
 
-        # TODO: COMPLETE THIS FUNCTION
         @app.route('/job_application/<user_id>/<job_id>', methods=['PUT'])
         def update_job_application(user_id, job_id):
 
 
             data: dict = request.get_json()
+            
+            job_application = self.model().query.filter_by(user_id=user_id, job_id=job_id).first()
 
-
-            job_application = self.model(
-
-                    user_id =data['user_id'],
-                    job_id =data['job_id'],
-                    interview_date = data['interview_date'],
-                    application_date=data['application_date'],
-                    application_source=data['application_source']
-
-                    )
             
             self.db.session.add(job_application)
             self.db.session.commit()
+
+            return jsonify({'message': 'new job_application created'})
+        
+        @app.route('/job_application/status/update/<user_id>/<job_id>', methods=['PUT'])
+        def update_status_job_application(user_id, job_id):
+
+            data: dict = request.get_json()
+
+            job_application = self.model().query.filter_by(user_id=user_id, job_id=job_id).first()
+
+            job_application.status = data['status']
+            
+            self.db.session.commit()
+
+            def get_job_application_handler_mailing_list():
+                
+                handlers = self.user_model.query.filter_by(handles_job_applications=True)
+                
+                return [handler.email for handler in handlers]
+            
+            def create_formatted_inquiry(data: dict, address: str, user: object, job: object, status) -> EmailMessage:
+
+                # create a formatted subject line for emails created by this backend
+                # format a string for the fullname of the user
+                # append it and the inquiry's subject, i_subject, to an optiflow message
+                # output the formatted subject
+                u_fullname = f'{user.surname}, {user.givenname}'
+                subject = f'Optiflow | Job Application Status Change | {u_fullname} | {job.jobTitle}'
+
+                content : str = ""
+
+                formatted_content : str = create_formatted_content(u_fullname) 
+
+                # initialize email; set from, to, subject, content 
+                email = EmailMessage()
+                email['Subject'] = subject
+                email['From'] = environ.get('OPTIFLOW_ACCOUNTNAME')
+                email['To'] = address
+                email.set_content(formatted_content)
+
+                return email
+            
+            def create_formatted_content(username: str) -> str:
+                return f"""
+
+                Good Day, {username}
+
+                Your Job Status has changed to {job_application.status}. 
+
+                Thank You
+
+                """
+
+            user = self.user_model().query.filter_by(id=user_id).first()
+            job = self.job_model().query.filter_by(id=job_id).first()
+
+            if not user:
+                return jsonify({'message': 'No user found'})
+            
+            context = ssl.create_default_context()
+
+            with SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+
+                smtp.login(environ.get('OPTIFLOW_ACCOUNTNAME'), environ.get('OPTIFLOW_PASSWORD'))
+
+                address_list : str = get_job_application_handler_mailing_list()
+
+                address_list.append(user.email)
+
+                status = job_application.status 
+
+                for address in address_list:
+
+                    data = request.get_json()
+
+                    email = create_formatted_inquiry(data, address, user, job, status)
+
+                    smtp.sendmail(
+
+                              environ.get('OPTIFLOW_ACCOUNTNAME'),
+                              address,
+                              email.as_string()
+                              
+                    )
+
+            return jsonify({'message': "email sent!"})
 
             return jsonify({'message': 'new job_application created'})
 
@@ -179,8 +284,18 @@ class JobApplicationResource:
 
             job_application = self.model().query.get((user_id, job_id))
 
+
             if not job_application:
                 return jsonify({'message': 'No user found'})
+            
+            user = self.user_model().query.filter_by(id=user_id).first()
+            job = self.job_model().query.filter_by(id=job_id).first()
+            
+            def get_job_application_handler_mailing_list():
+                
+                handlers = self.user_model.query.filter_by(handles_job_applications=True)
+                
+                return [handler.email for handler in handlers]
             
             def create_formatted_inquiry(data: dict, address: str, user: object, job: object) -> EmailMessage:
 
@@ -191,9 +306,7 @@ class JobApplicationResource:
                 u_fullname = f'{user.surname}, {user.givenname}'
                 subject = f'Optiflow | Job Application | {u_fullname} | {job.jobTitle}'
 
-                content : str = ""
-
-                formatted_content : str = create_formatted_content(content) 
+                formatted_content : str = create_formatted_content(u_fullname) 
 
                 # initialize email; set from, to, subject, content 
                 email = EmailMessage()
@@ -204,14 +317,19 @@ class JobApplicationResource:
 
                 return email
             
-            # TODO: ADD PROPER FORMATTING TO CONTENT
-            # add a simple header to content that indicates the source as OptiFlow
-            # return the content with this header
-            def create_formatted_content(body: str) -> str:
-                return body
+            def create_formatted_content(fullname: str) -> str:
+                return f"""
 
-            user = self.user_model().query.filter_by(id=user_id).first()
-            job = self.job_model().query.filter_by(id=job_id).first()
+                Good Day, {fullname}
+
+                Your Job Application Has been sent for review. 
+                We will return to you as soon as possible with our response.
+                MGHS thanks you for your interest in {job.jobTitle} and we hope for your continued interest.
+
+                Thank You
+
+                """
+
 
 
             if not user:
@@ -223,7 +341,8 @@ class JobApplicationResource:
 
                 smtp.login(environ.get('OPTIFLOW_ACCOUNTNAME'), environ.get('OPTIFLOW_PASSWORD'))
 
-                address_list : str = environ.get('JOB_APPLICANT_EMAIL_ADDRESS_LIST').split(',')
+                address_list : list = get_job_application_handler_mailing_list()
+
 
                 for address in address_list:
 

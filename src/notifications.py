@@ -1,18 +1,15 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 
-
-
-
 class notificationsResource:
 
-    def __init__(self, app: Flask, db: SQLAlchemy, model: object) -> None:
+    def __init__(self, app: Flask, db: SQLAlchemy, model: object, user_model: object) -> None:
         
-        self.register_routes(app, db)
+        self.register_routes(app, db, user_model)
         self.model = model
         self.db = db
 
-    def register_routes(self, app: Flask, db: SQLAlchemy) -> None:
+    def register_routes(self, app: Flask, db: SQLAlchemy, user: object) -> None:
 
 
         @app.route('/notification', methods=['GET'])
