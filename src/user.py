@@ -2,6 +2,14 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from tables import db, app, User as model
 
+import uuid
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from datetime import datetime
+
+from tables import login, token_required, auth_role
+
+
 class UserResource:
 
     def __init__(self) -> None:
@@ -10,11 +18,11 @@ class UserResource:
 
     def create_public_id(self) -> str:
 
-        return "afa"
+        return str(uuid.uuid4())
 
     def register_routes(self) -> None:
 
-
+        
         @app.route('/user', methods=['GET'])
         def get_all_users():
 
@@ -29,7 +37,7 @@ class UserResource:
 
                 input = {
 
-                    "input":user.id,
+                    "id":user.id,
                     "batch": user.batch,
                     "givenname": user.givenname,
                     "dob":user.dob,
@@ -54,11 +62,13 @@ class UserResource:
 
 
             return jsonify({"user": output})
-
+        
+        
         @app.route('/user/<id>', methods=['GET'])
+        @auth_role("admin")
         def get_one_user(id):
 
-            user = model().query.filter_by(id=id).first()
+            user = model().query.filter_by(public_id=id).first()
 
             if not user:
                 return jsonify({'message': 'No user found'})
@@ -67,7 +77,7 @@ class UserResource:
 
             user_data = {
 
-                    "input":user.id,
+                    "id":user.id,
                     "batch": user.batch,
                     "givenname": user.givenname,
                     "dob":user.dob,
@@ -96,20 +106,22 @@ class UserResource:
 
             user = model()
 
+            u_password = generate_password_hash(data['password'], method='pbkdf2:sha256')
+
             user.dob = data["dob"]
             user.batch = data["batch"]
             user.givenname = data["givenname"]
             user.surname = data["surname"]
             user.is_admin = data["is_admin"]
             user.is_intern = data["is_intern"]
-            user.password = data["password"]
+            user.password = u_password
             user.username = data["username"]
 
             user.phone_number = data["phone_number"]
             user.public_id = self.create_public_id()
 
 
-            user.register_date = data["register_date"]
+            user.register_date = datetime.now()
             user.team_id = data["team_id"]
             
             db.session.add(user)
@@ -120,7 +132,7 @@ class UserResource:
         @app.route('/user/<id>', methods=['DELETE'])
         def delete_user(id):
 
-            user = model().query.filter_by(id=id).first()
+            user = model().query.filter_by(public_id=id).first()
 
             if not user:
                 return jsonify({'message': 'No user found'})
@@ -131,12 +143,13 @@ class UserResource:
 
             return jsonify({'message': 'user has been deleted'})
         
+
         @app.route('/user/<id>', methods=['PUT'])
         def update_user(id):
             data = request.get_json()
 
 
-            user = model().query.filter_by(id=id).first()
+            user = model().query.filter_by(public_id=id).first()
 
             user.dob = data["dob"]
             user.batch = data["batch"]

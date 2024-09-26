@@ -1,6 +1,5 @@
-from flask import Flask, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
-from tables import db, app, Activity as model, ActivitySubscription as subscription
+from flask import jsonify, request
+from tables import db, app, User,Activity as model, ActivitySubscription as subscription
 from datetime import datetime
 
 class ActivityResource:
@@ -105,7 +104,7 @@ class ActivityResource:
             return jsonify({'message': 'new activity created'})
         
 
-        @app.route('/activity/<id>/subscriptions', methods=['GET'])
+        @app.route('/activity/<id>/sub', methods=['GET'])
         def get_activity_subscriptions(id):
 
             subs = subscription().query.filter_by(activity_id=id).all()
@@ -128,7 +127,30 @@ class ActivityResource:
                 output.append(input_data)
             
             return jsonify({'output': output})
-        
+
+        @app.route('/activity/<id>/sub/<u_id>', methods=['GET'])
+        def get_one_activity_subscription(id, u_id):
+
+
+            u = User().query.filter_by(id=u_id).first()
+
+            if u == None: return jsonify({'message': 'no intern by that id'})
+
+            sub = subscription().query.filter_by(activity_id=id, intern_id=u_id).first()
+
+            input_data = {
+                    "activity_id":sub.activity_id,
+                    "intern_id":sub.intern_id,
+                    "begin_date": sub.begin_date,
+                    "end_date": sub.end_date,
+                    "is_complete": sub.is_complete,
+                    "reflection": sub.reflection
+            }
+            
+            db.session.commit()
+
+            return jsonify({'message': input_data})
+
         @app.route('/activity/<id>/subscribe', methods=['POST'])
         def subscribe_to_activity(id):
 
@@ -137,6 +159,10 @@ class ActivityResource:
             activity = model().query.filter_by(id=id).first()
 
             sub = subscription()
+
+            u = User().query.filter_by(id=data["intern_id"]).first()
+
+            if u == None: return jsonify({'message': 'no intern by that id'})
 
             sub.activity_id = id
             sub.intern_id = data["intern_id"]
@@ -158,6 +184,10 @@ class ActivityResource:
 
             intern_id = data["intern_id"]
 
+            u = User().query.filter_by(id=intern_id).first()
+
+            if u == None: return jsonify({'message': 'no intern by that id'})
+
             sub = subscription().query.filter_by(activity_id=id, intern_id=intern_id).first()
 
             sub.end_date = datetime.now()
@@ -167,3 +197,5 @@ class ActivityResource:
             db.session.commit()
 
             return jsonify({'message': 'completed activity'})
+        
+

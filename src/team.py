@@ -8,12 +8,7 @@ class TeamResource:
         
         self.register_routes()
 
-    def create_public_id() -> str:
-
-        return ""
-
     def register_routes(self) -> None:
-
 
         @app.route('/team', methods=['GET'])
         def get_all_teams():
@@ -30,8 +25,7 @@ class TeamResource:
                 input = {
                     "name": team.name,
                     "description":team.description,
-                    "team_id":team.id,                    
-
+                    "team_id":team.id,
                 }
 
 
@@ -61,9 +55,7 @@ class TeamResource:
 
             data = request.get_json()
 
-
             team = model()
-
             team.description = data["description"]
             team.name = data["name"]
             
