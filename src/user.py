@@ -1,13 +1,12 @@
-from flask import Flask, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
+from flask import jsonify, request
 from tables import db, app, User as model
 
 import uuid
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import generate_password_hash
 
 from datetime import datetime
 
-from tables import login, token_required, auth_role
+from tables import auth_role
 
 
 class UserResource:

@@ -1,7 +1,8 @@
 from flask import Flask, jsonify, request
 
 from flask_sqlalchemy import SQLAlchemy
-
+from sqlalchemy import create_engine
+from sqlalchemy.exc import ProgrammingError
 
 from werkzeug.security import check_password_hash
 from flask import Flask, jsonify, request, make_response
@@ -14,12 +15,13 @@ import jwt
 
 from functools import wraps
 
+from os import environ
 
 app = Flask(__name__)
 app.secret_key = 'secret_key'
 
 # connection string
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@localhost:3306/mghs"
+app.config["SQLALCHEMY_DATABASE_URI"] = environ.get("CONNECTION_STRING")
 
 # connection string for docker
 #app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@host.docker.internal:3306/mghs"   
@@ -28,7 +30,7 @@ db = SQLAlchemy(app)
 
 class User(db.Model):
 
-    __tablename__ = "users"
+    __tablename__ = "app_user"
     
     id =db.Column(db.Integer, primary_key=True)
     public_id=db.Column(db.String(50), unique=True)    
@@ -95,7 +97,7 @@ class ActivitySubscription(db.Model):
     __tablename__ = "activity_subscriptions"
 
     activity_id=db.Column(db.Integer, db.ForeignKey("activities.id"),  primary_key=True)
-    intern_id=db.Column(db.Integer, db.ForeignKey("users.id"),  primary_key=True)
+    intern_id=db.Column(db.Integer, db.ForeignKey("app_user.id"),  primary_key=True)
     
     reflection=db.Column(db.String(300))
 
@@ -195,4 +197,19 @@ if __name__ == "__main__":
 
     with app.app_context() as context:
 
-        db.create_all()
+        engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
+
+        try:
+            Team.__table__.create(bind=engine)
+            User.__table__.create(bind=engine)
+            Task.__table__.create(bind=engine)
+            Activity.__table__.create(bind=engine)
+            ActivitySubscription.__table__.create(bind=engine)
+
+        # currently checks if there was a duplicate table error
+        except ProgrammingError as e:
+
+            print(e._message)
+            
+
+        db.session.commit()
