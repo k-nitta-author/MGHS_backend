@@ -10,6 +10,8 @@ from flask import Flask, jsonify, request, make_response
 from datetime import datetime, timedelta
 from time import time
 
+from os import environ
+
 import jwt
 
 
@@ -21,7 +23,7 @@ app = Flask(__name__)
 app.secret_key = 'secret_key'
 
 # connection string
-app.config["SQLALCHEMY_DATABASE_URI"] = environ.get("CONNECTION_STRING")
+app.config["SQLALCHEMY_DATABASE_URI"] = environ.get('CONNECTION_STRING')
 
 # connection string for docker
 #app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@host.docker.internal:3306/mghs"   
