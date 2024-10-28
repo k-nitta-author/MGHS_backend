@@ -1,6 +1,5 @@
 Flask-SQLAlchemy
 flask
-mysqlclient
 SQLAlchemy
 psycopg2
 PyJwt

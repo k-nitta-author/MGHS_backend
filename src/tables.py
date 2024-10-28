@@ -14,7 +14,6 @@ from os import environ
 
 import jwt
 
-
 from functools import wraps
 
 from os import environ
