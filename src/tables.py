@@ -151,7 +151,7 @@ def token_required(f):
         try:
             data = jwt.decode(token, app.secret_key, algorithms="HS256")
 
-            print({"message": "token has expired!", "exp": data['exp'], "time":time()})
+            print({"message": "token has expired!", "exp": data['exp'], "time":time() + timedelta(hours=10)})
 
         except:
             return jsonify({"message": "Token is invlalid"}), 403
