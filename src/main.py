@@ -1,11 +1,16 @@
 from os import environ
 
+from flask_cors import CORS
+
+
 from user import UserResource
 from activity import ActivityResource
 from task import TaskResource
 from team import TeamResource
 
 from tables import app
+
+cors = CORS(app, origins=["*"])
 
 user_resource = UserResource()
 team_resource = TeamResource()

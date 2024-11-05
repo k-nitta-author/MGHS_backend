@@ -1,5 +1,6 @@
 Flask-SQLAlchemy
 flask
+flask-CORS
 SQLAlchemy
 psycopg2
 PyJwt
