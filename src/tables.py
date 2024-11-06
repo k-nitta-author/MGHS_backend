@@ -123,12 +123,13 @@ def login():
 
     if user and check_password_hash(user.password, password):
 
-        token = jwt.encode({'user': user.username, 'exp': datetime.now() + timedelta(seconds=10)}, app.secret_key)
+        token = jwt.encode({'user': user.username, 'exp': datetime.now() + timedelta(hours=10)}, app.secret_key)
 
         return jsonify(
             {
                 "login_token": token,
-                "username": user.username
+                "username": user.username,
+                "is_admin": user.is_admin
                 }
             )
 
@@ -151,7 +152,7 @@ def token_required(f):
         try:
             data = jwt.decode(token, app.secret_key, algorithms="HS256")
 
-            print({"message": "token has expired!", "exp": data['exp'], "time":time() + timedelta(hours=10)})
+            print({"message": "token has expired!", "exp": data['exp'], "time":time()})
 
         except:
             return jsonify({"message": "Token is invlalid"}), 403
