@@ -10,7 +10,7 @@ from team import TeamResource
 
 from tables import app
 
-cors = CORS(app, origins=["*"])
+cors = CORS(app, origins="*")
 
 user_resource = UserResource()
 team_resource = TeamResource()
