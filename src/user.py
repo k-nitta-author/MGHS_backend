@@ -92,7 +92,7 @@ class UserResource:
 
             }
 
-            return jsonify({'user': user_data})
+            return jsonify(user_data)
 
         @app.route('/user', methods=['POST'])
         def create_user():
