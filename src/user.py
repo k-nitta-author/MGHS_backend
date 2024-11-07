@@ -64,15 +64,12 @@ class UserResource:
         
         
         @app.route('/user/<id>', methods=['GET'])
-        @auth_role("admin")
         def get_one_user(id):
 
             user = model().query.filter_by(public_id=id).first()
 
             if not user:
                 return jsonify({'message': 'No user found'})
-
-
 
             user_data = {
 
