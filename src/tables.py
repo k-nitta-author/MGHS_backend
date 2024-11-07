@@ -129,6 +129,7 @@ def login():
             {
                 "login_token": token,
                 "username": user.username,
+                "public_id": user.public_id,
                 "is_admin": user.is_admin
                 }
             )
