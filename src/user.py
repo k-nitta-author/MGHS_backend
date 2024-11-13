@@ -1,5 +1,6 @@
 from flask import jsonify, request
 from tables import db, app, User as model
+from tables import Team
 
 import uuid
 from werkzeug.security import generate_password_hash
@@ -67,6 +68,9 @@ class UserResource:
         def get_one_user(id):
 
             user = model().query.filter_by(public_id=id).first()
+            team = Team()
+
+            user_team : Team = team.query.filter_by(id=user.team_id).first()
 
             if not user:
                 return jsonify({'message': 'No user found'})
@@ -89,6 +93,8 @@ class UserResource:
                     "public_id":user.public_id,
                     "register_date":user.register_date,
                     "team_id":user.team_id,
+                    "team_name":user_team.name
+
 
             }
 
@@ -102,6 +108,8 @@ class UserResource:
 
             user = model()
 
+
+            
             u_password = generate_password_hash(data['password'], method='pbkdf2:sha256')
 
             user.dob = data["dob"]
@@ -115,7 +123,6 @@ class UserResource:
 
             user.phone_number = data["phone_number"]
             user.public_id = self.create_public_id()
-
 
             user.register_date = datetime.now()
             user.team_id = data["team_id"]

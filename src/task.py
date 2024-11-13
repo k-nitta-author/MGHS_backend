@@ -36,7 +36,7 @@ class TaskResource:
                 output.append(input)
 
 
-            return jsonify({"task": output})
+            return jsonify(output)
 
         @app.route('/task/<id>', methods=['GET'])
         def get_one_task(id):

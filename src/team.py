@@ -26,6 +26,9 @@ class TeamResource:
                     "name": team.name,
                     "description":team.description,
                     "team_id":team.id,
+
+                    # to allow the name to be able to index the team_id
+                    team.name: team.id
                 }
 
 
@@ -45,7 +48,10 @@ class TeamResource:
             team_data = {
                     "name": team.name,
                     "description":team.description,
-                    "team_id":team.id,   
+                    "team_id":team.id,
+
+                    # to allow the name to be able to index the team_id
+                    team.name: team.id
             }
 
             return jsonify({'team': team_data})
