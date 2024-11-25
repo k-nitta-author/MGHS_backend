@@ -63,7 +63,7 @@ class TeamResource:
 
             members: User = User.query.filter_by(team_id=id).all()
 
-            m_data = [{"name":m.name, "public_id": m.public_id} for m in members]
+            m_data = [{"name": (m.givenname + " " + m.surname), "public_id": m.public_id} for m in members]
 
             if not team:
                 return jsonify({'message': 'No team found'})
