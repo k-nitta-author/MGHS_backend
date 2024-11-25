@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from tables import db, app, Task as model
+from tables import db, app, Task as model, Team
 
 class TaskResource:
 
@@ -15,6 +15,7 @@ class TaskResource:
         def get_all_tasks():
 
             tasks = model().query.all()
+
             output=[]
 
             task_data = []
@@ -23,12 +24,17 @@ class TaskResource:
 
                 task : model = task
 
+                t: Team = Team.query.filter_by(id=task.team_id)
+
+
                 input = {
 
                     "task.id":task.id,
                     "name":task.name,
                     "description":task.description,
-                    "team_id":task.team_id
+                    "team_id":task.team_id,
+                    "team_name": t.name
+
 
                 }
 
@@ -43,6 +49,9 @@ class TaskResource:
 
             task = model().query.filter_by(id=id).first()
 
+            t: Team = Team.query.filter_by(id=task.team_id)
+
+
             if not task:
                 return jsonify({'message': 'No task found'})
 
@@ -50,7 +59,8 @@ class TaskResource:
                     "task.id":task.id,
                     "name":task.name,
                     "description":task.description,
-                    "team_id":task.team_id
+                    "team_id":task.team_id,
+                    "team_name": t.name
             }
 
             return jsonify({'task': task_data})

@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from tables import db, app, Team as model
+from tables import db, app, Team as model, User
 
 class TeamResource:
 
@@ -52,6 +52,26 @@ class TeamResource:
 
                     # to allow the name to be able to index the team_id
                     team.name: team.id
+            }
+
+            return jsonify({'team': team_data})
+
+        @app.route('/team/members/<id>', methods=['GET'])
+        def get_team_members(id):
+
+            team = model().query.filter_by(id=id).first()
+
+            members: User = User.query.filter_by(team_id=id).all()
+
+            m_data = [{"name":m.name, "public_id": m.public_id} for m in members]
+
+            if not team:
+                return jsonify({'message': 'No team found'})
+
+            team_data = {
+                    "name": team.name,
+                    "description":team.description,
+                    "members": m_data
             }
 
             return jsonify({'team': team_data})
