@@ -24,7 +24,7 @@ class TaskResource:
 
                 task : model = task
 
-                t: Team = Team.query.filter_by(id=task.team_id).first()
+                t: Team = Team.query.filter_by(team_id=task.team_id).first()
 
 
                 input = {
@@ -49,7 +49,7 @@ class TaskResource:
 
             task = model().query.filter_by(id=id).first()
 
-            t: Team = Team.query.filter_by(id=task.team_id).first()
+            t: Team = Team.query.filter_by(team_id=task.team_id).first()
 
 
             if not task:
