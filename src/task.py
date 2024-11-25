@@ -24,7 +24,7 @@ class TaskResource:
 
                 task : model = task
 
-                t: Team = Team().query.filter_by(id=task.team_id).first()
+
 
 
                 input = {
@@ -35,6 +35,11 @@ class TaskResource:
                     "team_id":task.team_id
 
                 }
+
+            if task.team_id:
+                t: Team = Team().query.filter_by(id=task.team_id).first()
+
+                input["team_name"] = t.name
 
 
                 output.append(input)
@@ -47,9 +52,6 @@ class TaskResource:
 
             task = model().query.filter_by(id=id).first()
 
-            t: Team = Team().query.filter_by(id=task.team_id).first()
-
-
             if not task:
                 return jsonify({'message': 'No task found'})
 
@@ -59,6 +61,12 @@ class TaskResource:
                     "description":task.description,
                     "team_id":task.team_id,
             }
+
+            if task.team_id:
+                t: Team = Team().query.filter_by(id=task.team_id).first()
+
+                input["team_name"] = t.name
+
 
             return jsonify({'task': task_data})
 
