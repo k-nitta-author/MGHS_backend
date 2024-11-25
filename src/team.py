@@ -69,12 +69,10 @@ class TeamResource:
                 return jsonify({'message': 'No team found'})
 
             team_data = {
-                    "name": team.name,
-                    "description":team.description,
                     "members": m_data
             }
 
-            return jsonify({'team': team_data})
+            return jsonify(team_data)
 
         @app.route('/team', methods=['POST'])
         def create_team():
