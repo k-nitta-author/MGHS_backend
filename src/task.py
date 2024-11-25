@@ -24,7 +24,7 @@ class TaskResource:
 
                 task : model = task
 
-                t: Team = Team.query.filter_by(id=task.team_id).first()
+                t: Team = Team().query.filter_by(id=task.team_id).first()
 
 
                 input = {
@@ -33,6 +33,7 @@ class TaskResource:
                     "name":task.name,
                     "description":task.description,
                     "team_id":task.team_id,
+                    "team_name": t.name
 
 
                 }
@@ -48,7 +49,7 @@ class TaskResource:
 
             task = model().query.filter_by(id=id).first()
 
-            t: Team = Team.query.filter_by(id=task.team_id).first()
+            t: Team = Team().query.filter_by(id=task.team_id).first()
 
 
             if not task:
@@ -59,6 +60,7 @@ class TaskResource:
                     "name":task.name,
                     "description":task.description,
                     "team_id":task.team_id,
+                    "team_name": t.name
             }
 
             return jsonify({'task': task_data})
