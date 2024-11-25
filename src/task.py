@@ -32,9 +32,7 @@ class TaskResource:
                     "task.id":task.id,
                     "name":task.name,
                     "description":task.description,
-                    "team_id":task.team_id,
-                    "team_name": t.name
-
+                    "team_id":task.team_id
 
                 }
 
@@ -60,7 +58,6 @@ class TaskResource:
                     "name":task.name,
                     "description":task.description,
                     "team_id":task.team_id,
-                    "team_name": t.name
             }
 
             return jsonify({'task': task_data})
