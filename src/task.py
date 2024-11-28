@@ -37,6 +37,10 @@ class TaskResource:
                 }
 
 
+
+                output.append(input)
+
+
             return jsonify(output)
 
         @app.route('/task/<id>', methods=['GET'])
