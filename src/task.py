@@ -29,7 +29,7 @@ class TaskResource:
 
                 input = {
 
-                    "task.id":task.id,
+                    "id":task.id,
                     "name":task.name,
                     "description":task.description,
                     "team_id":task.team_id
@@ -52,7 +52,7 @@ class TaskResource:
                 return jsonify({'message': 'No task found'})
 
             task_data = {
-                    "task.id":task.id,
+                    "id":task.id,
                     "name":task.name,
                     "description":task.description,
                     "team_id":task.team_id,
