@@ -61,7 +61,7 @@ class TaskResource:
             if task.team_id:
                 t: Team = Team().query.filter_by(id=task.team_id).first()
 
-                input["team_name"] = t.name
+                task_data["team_name"] = t.name
 
 
             return jsonify({'task': task_data})
