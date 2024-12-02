@@ -120,6 +120,7 @@ class UserResource:
             user.is_intern = data["is_intern"]
             user.password = u_password
             user.username = data["username"]
+            user.email = data["email"]
 
             user.phone_number = data["phone_number"]
             user.public_id = self.create_public_id()
@@ -161,6 +162,7 @@ class UserResource:
             user.is_admin = data["is_admin"]
             user.is_intern = data["is_intern"]
             user.password = data["password"]
+            user.email = data["email"]
 
             user.phone_number = data["phone_number"]
 
