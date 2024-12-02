@@ -36,7 +36,7 @@ class TaskResource:
                 if task.team_id:
                     t: Team = Team().query.filter_by(id=task.team_id).first()
 
-                    task_data["team_name"] = t.name
+                    input["team_name"] = t.name
 
                 output.append(input)
 
