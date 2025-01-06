@@ -48,6 +48,8 @@ class User(db.Model):
     is_admin=db.Column(db.Boolean)
     is_intern=db.Column(db.Boolean)
 
+    must_reset_password=db.Column(db.Boolean)
+
     batch=db.Column(db.Integer)
 
     team_id=db.Column(db.Integer,db.ForeignKey("teams.id", ondelete='SET NULL'), nullable=True)
@@ -88,6 +90,7 @@ class Activity(db.Model):
     name = db.Column(db.String(30), unique=True)
     description = db.Column(db.String(300))
     status = db.Column(db.String(20))
+    rating = db.Column(db.Integer)
 
     task_id = db.Column(db.Integer, db.ForeignKey("tasks.id"))
 

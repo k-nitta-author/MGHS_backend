@@ -46,14 +46,12 @@ class UserResource:
                     "email": user.email,
                     "is_intern":user.is_intern,
 
-                    "password": user.password,
                     "username": user.username,
 
                     "phone_number":user.phone_number,
                     "public_id":user.public_id,
                     "register_date":user.register_date,
-                    "team_id":user.team_id,
-                    
+                    "team_id":user.team_id
 
                 }
 
@@ -86,7 +84,6 @@ class UserResource:
                     "email": user.email,
                     "is_intern":user.is_intern,
 
-                    "password": user.password,
                     "username": user.username,
 
                     "phone_number":user.phone_number,
@@ -94,7 +91,6 @@ class UserResource:
                     "register_date":user.register_date,
                     "team_id":user.team_id,
                     "team_name":user_team.name
-
 
             }
 
@@ -108,8 +104,6 @@ class UserResource:
 
             user = model()
 
-
-            
             u_password = generate_password_hash(data['password'], method='pbkdf2:sha256')
 
             user.dob = data["dob"]
@@ -121,6 +115,7 @@ class UserResource:
             user.password = u_password
             user.username = data["username"]
             user.email = data["email"]
+            user.must_reset_password = False
 
             user.phone_number = data["phone_number"]
             user.public_id = self.create_public_id()
@@ -161,7 +156,6 @@ class UserResource:
             user.surname = data["surname"]
             user.is_admin = data["is_admin"]
             user.is_intern = data["is_intern"]
-            user.password = data["password"]
             user.email = data["email"]
 
             user.phone_number = data["phone_number"]
@@ -173,3 +167,33 @@ class UserResource:
             db.session.commit()
 
             return jsonify({'message': 'new user created'})
+        
+
+        # route for admin to reset user password
+        @app.route('/user/<id>/forgot_password', methods=['PUT'])
+        def forgot_user_password(id):
+
+            data = request.get_json()
+
+
+            user = model().query.filter_by(public_id=id).first()
+
+            user.must_reset_password = True
+
+            return jsonify({'message': 'user may reset password'})
+
+        # route to set a new password for the user
+        @app.route('/user/<id>/reset_password', methods=['PUT'])
+        def reset_user_password(id):
+            data = request.get_json()
+
+            user = model().query.filter_by(public_id=id).first()
+            
+            u_password = generate_password_hash(data['password'], method='pbkdf2:sha256')
+            user.password = u_password
+            
+            user.must_reset_password = False
+        
+            return jsonify({'message': 'user has successfully reset password'})
+        
+
