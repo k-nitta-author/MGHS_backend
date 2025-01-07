@@ -58,11 +58,11 @@ class ActivityResource:
 
             # get the number of complete subscriptions
 
-            complete_subs_count = subscription.query.filter_by(status="is_complete").count()
+            complete_subs_count = subscription.query.filter_by(is_complete=True).count()
 
             # get the number of incomplete subscriptions
 
-            incomplete_subs = subscription.query.filter_by(status="is_complete").count()
+            incomplete_subs = subscription.query.filter_by(is_complete=False).count()
 
             # TODO: CONSIDER ADDING THIS FUNCTIONALITY
             # most complete actitivty
