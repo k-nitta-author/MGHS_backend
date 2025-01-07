@@ -46,11 +46,11 @@ class ActivityResource:
 
             # get the number of activities with status: Complete
 
-            complete_activities = model.query.filter_by(status="complete").count()
+            complete_activities = model.query.filter_by(status="Complete").count()
 
             # get the number of activities with status: Incomplete
 
-            incomplete_activities = model.query.filter_by(status="incomplete").count()
+            incomplete_activities = model.query.filter_by(status="Incomplete").count()
 
             # get the number of activity subscriptions 
 
