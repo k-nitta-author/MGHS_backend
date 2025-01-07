@@ -296,14 +296,14 @@ class ActivityResource:
 
             return jsonify({'message': 'completed activity'})
 
-        @app.route('/activity/<id>/sub/<public_id>', methods=['GET'])
+        @app.route('/activity/sub/<public_id>', methods=['GET'])
         def get_user_activity_subscription(public_id):
 
             
             result = db.session.query(model, subscription, User)\
             .join(subscription, model.id==subscription.activity_id)\
             .join(User, User.public_id == public_id)\
-            .filter(model.id == id, User.public_id == public_id)\
+            .filter(User.public_id == public_id)\
             .first()
 
             if not result:
