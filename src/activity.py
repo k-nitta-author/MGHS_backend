@@ -42,7 +42,7 @@ class ActivityResource:
         def get_activity_statistics():
 
             # get the number of rows composing the activities table
-            activity_row_count = db.session.query(model)
+            activity_row_count = db.session.query(model).count()
 
             # get the number of activities with status: Complete
 
