@@ -162,7 +162,7 @@ class ActivityResource:
             return jsonify({'message': 'new activity created'})
 
         @app.route('/activity/sub', methods=['GET'])
-        def get_all_activity_subscriptions(id):
+        def get_all_activity_subscriptions():
 
             subs = subscription.query.all()
 
