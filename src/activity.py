@@ -246,7 +246,7 @@ class ActivityResource:
             if u == None: return jsonify({'message': 'no intern by that id'})
 
             sub.activity_id = id
-            sub.intern_id = data["intern_id"]
+            sub.intern_id = u.id
             sub.begin_date = datetime.now()
             sub.end_date = None
             sub.is_complete = False
