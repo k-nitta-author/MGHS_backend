@@ -61,12 +61,12 @@ class ActivityResource:
 
             # most complete activity
             most_complete_activity = db.session.query(
-            subscription.activity_id, db.func.count(subscription.id).label('count')
+            subscription.activity_id, db.func.count().label('count')
             ).filter_by(is_complete=True).group_by(subscription.activity_id).order_by(db.desc('count')).first()
 
             # least complete activity
             least_complete_activity = db.session.query(
-            subscription.activity_id, db.func.count(subscription.id).label('count')
+            subscription.activity_id, db.func.count().label('count')
             ).filter_by(is_complete=True).group_by(subscription.activity_id).order_by('count').first()
 
             # avg time to completion for activity subscription
