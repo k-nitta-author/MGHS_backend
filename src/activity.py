@@ -45,37 +45,46 @@ class ActivityResource:
             activity_row_count = db.session.query(model).count()
 
             # get the number of activities with status: Complete
-
             complete_activities = model.query.filter_by(status="Complete").count()
 
             # get the number of activities with status: Incomplete
-
             incomplete_activities = model.query.filter_by(status="Incomplete").count()
 
             # get the number of activity subscriptions 
-
             subscriptions_count = subscription.query.count()
 
             # get the number of complete subscriptions
-
             complete_subs_count = subscription.query.filter_by(is_complete=True).count()
 
             # get the number of incomplete subscriptions
-
             incomplete_subs = subscription.query.filter_by(is_complete=False).count()
 
-            # TODO: CONSIDER ADDING THIS FUNCTIONALITY
-            # most complete actitivty
+            # most complete activity
+            most_complete_activity = db.session.query(
+            subscription.activity_id, db.func.count(subscription.id).label('count')
+            ).filter_by(is_complete=True).group_by(subscription.activity_id).order_by(db.desc('count')).first()
+
             # least complete activity
+            least_complete_activity = db.session.query(
+            subscription.activity_id, db.func.count(subscription.id).label('count')
+            ).filter_by(is_complete=True).group_by(subscription.activity_id).order_by('count').first()
+
             # avg time to completion for activity subscription
+            avg_time_to_completion = db.session.query(
+            db.func.avg(db.func.julianday(subscription.end_date) - db.func.julianday(subscription.begin_date))
+            ).filter(subscription.is_complete == True).scalar()
 
             output = {
-                    "activity_row_count": activity_row_count,
-                    "complete_activities": complete_activities,
-                    "incomplete_activities":incomplete_activities,
-                    "subscriptions_count": subscriptions_count,
-                    "complete_subs_count": complete_subs_count,
-                    "incomplete_subs": incomplete_subs}
+            "activity_row_count": activity_row_count,
+            "complete_activities": complete_activities,
+            "incomplete_activities": incomplete_activities,
+            "subscriptions_count": subscriptions_count,
+            "complete_subs_count": complete_subs_count,
+            "incomplete_subs": incomplete_subs,
+            "most_complete_activity": most_complete_activity.activity_id if most_complete_activity else None,
+            "least_complete_activity": least_complete_activity.activity_id if least_complete_activity else None,
+            "avg_time_to_completion": avg_time_to_completion
+            }
 
             return jsonify(output)
 
