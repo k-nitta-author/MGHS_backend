@@ -69,10 +69,9 @@ class ActivityResource:
             subscription.activity_id, db.func.count().label('count')
             ).filter_by(is_complete=True).group_by(subscription.activity_id).order_by('count').first()
 
+            # TODO: get the average time to completion for activity subscription
             # avg time to completion for activity subscription
-            avg_time_to_completion = db.session.query(
-            db.func.avg(db.func.julianday(subscription.end_date) - db.func.julianday(subscription.begin_date))
-            ).filter(subscription.is_complete == True).scalar()
+
 
             output = {
             "activity_row_count": activity_row_count,
@@ -82,8 +81,8 @@ class ActivityResource:
             "complete_subs_count": complete_subs_count,
             "incomplete_subs": incomplete_subs,
             "most_complete_activity": most_complete_activity.activity_id if most_complete_activity else None,
-            "least_complete_activity": least_complete_activity.activity_id if least_complete_activity else None,
-            "avg_time_to_completion": avg_time_to_completion
+            "least_complete_activity": least_complete_activity.activity_id if least_complete_activity else None
+            #"avg_time_to_completion": avg_time_to_completion
             }
 
             return jsonify(output)
