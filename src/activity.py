@@ -80,8 +80,8 @@ class ActivityResource:
             "subscriptions_count": subscriptions_count,
             "complete_subs_count": complete_subs_count,
             "incomplete_subs": incomplete_subs,
-            "most_complete_activity": most_complete_activity.activity_id if most_complete_activity else None,
-            "least_complete_activity": least_complete_activity.activity_id if least_complete_activity else None
+            "most_complete_activity": {"id": most_complete_activity.activity_id, "name": most_complete_activity.name} if most_complete_activity else None,
+            "least_complete_activity": {"id": least_complete_activity.activity_id, "name": least_complete_activity.name} if least_complete_activity else None
             #"avg_time_to_completion": avg_time_to_completion
             }
 
@@ -225,7 +225,7 @@ class ActivityResource:
 
             if u == None: return jsonify({'message': 'no intern by that id'})
 
-            sub = subscription().query.filter_by(activity_id=id, intern_id=u_id).first()
+            sub: subscription = subscription().query.filter_by(activity_id=id, intern_id=u_id).first()
 
             input_data = {
                     "activity_id":sub.activity_id,
@@ -296,7 +296,7 @@ class ActivityResource:
 
             if u == None: return jsonify({'message': 'no intern by that id'})
 
-            sub = subscription().query.filter_by(activity_id=id, intern_id=u.id).first()
+            sub: subscription = subscription().query.filter_by(activity_id=id, intern_id=u.id).first()
 
             sub.reflection = data["reflection"]
             
@@ -337,7 +337,7 @@ class ActivityResource:
             return jsonify({'message': response})
         
         @app.route('/activity/<id>/complete', methods=['PUT'])
-        def complete_activity(id):
+        def complete_activity_subscription(id):
 
             data = request.get_json()
 
