@@ -321,20 +321,20 @@ class ActivityResource:
                 return jsonify({'message': 'no matching record found'}), 404
             
 
-            activities, subs, user = result
+            response = []
 
-            response = {
-                "activity_name":  activities.name,
-                "activity_description": activities.description,
-                "activity_status": activities.status,
-                'subscription_begin_date': subs.begin_date,
-                'subscription_end_date': subs.end_date,
-                'subscription_is_complete': subs.is_complete,
-                'subscription_reflection': subs.reflection,
-                'user_givenname': user.givenname,
-                'user_surname': user.surname,
-            }
-
+            for activities, subs, user in result:
+                response.append({
+                    "activity_name":  activities.name,
+                    "activity_description": activities.description,
+                    "activity_status": activities.status,
+                    'subscription_begin_date': subs.begin_date,
+                    'subscription_end_date': subs.end_date,
+                    'subscription_is_complete': subs.is_complete,
+                    'subscription_reflection': subs.reflection,
+                    'user_givenname': user.givenname,
+                    'user_surname': user.surname,
+                })
 
             return jsonify({'message': response})
         
