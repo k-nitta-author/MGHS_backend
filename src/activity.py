@@ -357,6 +357,7 @@ class ActivityResource:
 
             return jsonify({'message': 'completed activity'})
 
+
     @app.route('/activity/subscriptions/<public_id>', methods=['GET'])
     def get_user_activity_subscriptions(public_id):
         subs = db.session.query(subscription, model)\
