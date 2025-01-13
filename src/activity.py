@@ -80,7 +80,7 @@ class ActivityResource:
             "subscriptions_count": subscriptions_count,
             "complete_subs_count": complete_subs_count,
             "incomplete_subs": incomplete_subs,
-            
+
             #"most_complete_activity": {"id": most_complete_activity.activity_id, "name": most_complete_activity.name} if most_complete_activity else None,
             #"least_complete_activity": {"id": least_complete_activity.activity_id, "name": least_complete_activity.name} if least_complete_activity else None
 
@@ -314,7 +314,7 @@ class ActivityResource:
             .join(subscription, model.id==subscription.activity_id)\
             .join(User, User.public_id == public_id)\
             .filter(User.public_id == public_id)\
-            .first()
+            .all()
 
             if not result:
 
@@ -358,28 +358,3 @@ class ActivityResource:
             db.session.commit()
 
             return jsonify({'message': 'completed activity'})
-
-    @app.route('/activity/subscriptions/<public_id>', methods=['GET'])
-    def get_user_activity_subscriptions(public_id):
-        subs = db.session.query(subscription, model)\
-              .join(model, subscription.activity_id == model.id)\
-              .join(User, User.public_id == public_id)\
-              .filter(User.public_id == public_id).all()
-
-        if not subs:
-            return jsonify({'message': 'No subscriptions found for this user'}), 404
-
-        output = []
-        for sub, activity in subs:
-            if sub and activity:
-                sub_data = {
-                    "activity_name": activity.name,
-                    "activity_description": activity.description,
-                    "subscription_begin_date": sub.begin_date,
-                    "subscription_end_date": sub.end_date,
-                    "subscription_is_complete": sub.is_complete,
-                    "subscription_reflection": sub.reflection
-                }
-                output.append(sub_data)
-
-        return jsonify({'subscriptions': output})
