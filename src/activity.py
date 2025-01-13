@@ -80,8 +80,10 @@ class ActivityResource:
             "subscriptions_count": subscriptions_count,
             "complete_subs_count": complete_subs_count,
             "incomplete_subs": incomplete_subs,
-            "most_complete_activity": {"id": most_complete_activity.activity_id, "name": most_complete_activity.name} if most_complete_activity else None,
-            "least_complete_activity": {"id": least_complete_activity.activity_id, "name": least_complete_activity.name} if least_complete_activity else None
+            
+            #"most_complete_activity": {"id": most_complete_activity.activity_id, "name": most_complete_activity.name} if most_complete_activity else None,
+            #"least_complete_activity": {"id": least_complete_activity.activity_id, "name": least_complete_activity.name} if least_complete_activity else None
+
             #"avg_time_to_completion": avg_time_to_completion
             }
 
@@ -356,7 +358,6 @@ class ActivityResource:
             db.session.commit()
 
             return jsonify({'message': 'completed activity'})
-
 
     @app.route('/activity/subscriptions/<public_id>', methods=['GET'])
     def get_user_activity_subscriptions(public_id):
