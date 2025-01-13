@@ -334,6 +334,7 @@ class ActivityResource:
                     'subscription_reflection': subs.reflection,
                     'user_givenname': user.givenname,
                     'user_surname': user.surname,
+                    "activity_id": activities.id
                 })
 
             return jsonify({'message': response})
