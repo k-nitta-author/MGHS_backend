@@ -312,7 +312,7 @@ class ActivityResource:
             
             result = db.session.query(model, subscription, User)\
             .join(subscription, model.id==subscription.activity_id)\
-            .join(User, User.public_id == public_id)\
+            .join(User, User.id == subscription.intern_id)\
             .filter(User.public_id == public_id)\
             .all()
 
