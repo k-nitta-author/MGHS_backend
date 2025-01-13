@@ -227,7 +227,7 @@ class ActivityResource:
 
             if u == None: return jsonify({'message': 'no intern by that id'})
 
-            sub: subscription = subscription().query.filter_by(activity_id=id, intern_id=u_id).first()
+            sub: subscription = subscription().query.filter_by(activity_id=id, intern_id=u.id).first()
 
             input_data = {
                     "activity_id":sub.activity_id,
