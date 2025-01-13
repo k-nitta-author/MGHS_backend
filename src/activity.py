@@ -369,14 +369,15 @@ class ActivityResource:
 
         output = []
         for sub, activity in subs:
-            sub_data = {
-                "activity_name": activity.name,
-                "activity_description": activity.description,
-                "subscription_begin_date": sub.begin_date,
-                "subscription_end_date": sub.end_date,
-                "subscription_is_complete": sub.is_complete,
-                "subscription_reflection": sub.reflection
-            }
-            output.append(sub_data)
+            if sub and activity:
+                sub_data = {
+                    "activity_name": activity.name,
+                    "activity_description": activity.description,
+                    "subscription_begin_date": sub.begin_date,
+                    "subscription_end_date": sub.end_date,
+                    "subscription_is_complete": sub.is_complete,
+                    "subscription_reflection": sub.reflection
+                }
+                output.append(sub_data)
 
         return jsonify({'subscriptions': output})
