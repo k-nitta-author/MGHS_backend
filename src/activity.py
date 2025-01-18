@@ -280,7 +280,7 @@ class ActivityResource:
             }
 
 
-            return jsonify({'message': response, 'summary': {}})
+            return jsonify({'message': response, 'summary': summary})
         
         # Route to mark an activity subscription as complete by activity ID
         @app.route('/activity/<id>/complete', methods=['PUT'])
