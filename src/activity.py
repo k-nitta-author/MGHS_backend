@@ -273,7 +273,14 @@ class ActivityResource:
                     "activity_id": activities.id,
                     #"task_name": activities.task.name  # Added task name
                 })
-            return jsonify({'message': response})
+
+            summary = {
+                "no_complete_activities": len([x for x in response if x['subscription_is_complete'] == True]),
+                "no_of_subscriptions": len(response),
+            }
+
+
+            return jsonify({'message': response, 'summary': {}})
         
         # Route to mark an activity subscription as complete by activity ID
         @app.route('/activity/<id>/complete', methods=['PUT'])
