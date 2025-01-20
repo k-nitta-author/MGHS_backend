@@ -2,6 +2,7 @@ from flask import jsonify, request
 from tables import db, app, User, Activity as model, ActivitySubscription as subscription, Task
 from datetime import datetime
 
+
 class ActivityResource:
 
     def __init__(self) -> None:

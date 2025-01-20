@@ -61,6 +61,7 @@ class User(db.Model):
     phone_number=db.Column(db.String(50))
 
     activities = db.relationship("Activity", secondary="activity_subscriptions", back_populates="users")
+    subscriptions = db.relationship("ActivitySubscription", back_populates="intern")
 
     
 class Team(db.Model):
