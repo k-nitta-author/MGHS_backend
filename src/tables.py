@@ -24,6 +24,10 @@ app.secret_key = 'secret_key'
 # connection string
 app.config["SQLALCHEMY_DATABASE_URI"] = environ.get('CONNECTION_STRING')
 
+# set the secret key
+# app.secret_key = environ.get('SECRET_KEY')
+
+
 # connection string for docker
 #app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:koolele@host.docker.internal:3306/mghs"   
 
@@ -67,8 +71,13 @@ class Team(db.Model):
     name = db.Column(db.String(30), unique=True)
     description = db.Column(db.String(300))
 
-    members = db.relationship('User', backref='teams', cascade="all")
-    tasks = db.relationship('Task', backref='teams', cascade="all")
+    # get the team with the most members
+    def get_team_with_most_members(self):
+        return db.session.query(User).filter_by(team_id=self.id).count()
+
+    members = db.relationship('User', backref='teams', cascade="save-update, merge")
+    tasks = db.relationship('Task', backref='teams', cascade="all, delete-orphan")
+    
 
 
 class Task(db.Model):
@@ -79,6 +88,10 @@ class Task(db.Model):
     name = db.Column(db.String(30), unique=True)
     description = db.Column(db.String(300))
     team_id = db.Column(db.Integer, db.ForeignKey("teams.id", ondelete='SET NULL'), nullable=True)
+
+    # TODO: TEST THIS FUNCTION
+    def count_activities(self):
+        return self.activities.query.filter_by(task_id=self.id).count()
 
     activities = db.relationship('Activity', backref='tasks', cascade="all, delete, delete-orphan")
 
@@ -95,49 +108,56 @@ class Activity(db.Model):
     task_id = db.Column(db.Integer, db.ForeignKey("tasks.id"))
 
     users = db.relationship("User", secondary="activity_subscriptions", back_populates="activities")
+    subscriptions = db.relationship("ActivitySubscription", backref="activities", cascade="all, delete, delete-orphan")
 
 class ActivitySubscription(db.Model):
 
     __tablename__ = "activity_subscriptions"
 
-    activity_id=db.Column(db.Integer, db.ForeignKey("activities.id"),  primary_key=True)
-    intern_id=db.Column(db.Integer, db.ForeignKey("app_user.id"),  primary_key=True)
+    activity_id = db.Column(db.Integer, db.ForeignKey("activities.id"), primary_key=True)
+    intern_id = db.Column(db.Integer, db.ForeignKey("app_user.id"), primary_key=True)
     
-    reflection=db.Column(db.String(300))
+    reflection = db.Column(db.String(300))
 
-    begin_date=db.Column(db.Date)
-    end_date=db.Column(db.Date, nullable=True)
+    begin_date = db.Column(db.Date)
+    end_date = db.Column(db.Date, nullable=True)
 
-    is_complete=db.Column(db.Boolean)
+    is_complete = db.Column(db.Boolean)
 
+    activity = db.relationship("Activity", back_populates="subscriptions")
+    intern = db.relationship("User", back_populates="subscriptions")
+
+# authenticate the user
+# requires basic authentication with username and password
+# returns a token that is valid for 10 hours
+# the token is used to authenticate the user for other requests
 @app.route('/login')
 def login():
-    auth = request.authorization.parameters
+    auth = request.authorization
 
-    username  = auth.get('username', "")
+    if not auth or not auth.username or not auth.password:
+        return jsonify({"message": "Missing username or password"}), 401
 
-    password  = auth.get('password', "")
+    username = auth.username
+    password = auth.password
 
-    user: User = User.query.filter_by(username=username).first()
+    user = User.query.filter_by(username=username).first()
 
+    if not user:
+        return jsonify({"message": "User not found"}), 401
 
-    if not user or not password:
-        return jsonify({"message": "no password or username or user"})
+    if not check_password_hash(user.password, password):
+        return jsonify({"message": "Incorrect password"}), 401
 
-    if user and check_password_hash(user.password, password):
-
-        token = jwt.encode({'user': user.username, 'exp': datetime.now() + timedelta(hours=10)}, app.secret_key)
-
-        return jsonify(
-            {
-                "login_token": token,
-                "username": user.username,
-                "public_id": user.public_id,
-                "is_admin": user.is_admin
-                }
-            )
-
-    return make_response('Could Not Verify', 401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
+    token = jwt.encode({'user': user.username, 'exp': datetime.now() + timedelta(hours=10)}, app.secret_key)
+    return jsonify(
+        {
+            "login_token": token,
+            "username": user.username,
+            "public_id": user.public_id,
+            "is_admin": user.is_admin
+        }
+    )
 
 def token_required(f):
     @wraps(f)
